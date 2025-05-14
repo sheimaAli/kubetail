@@ -683,15 +683,7 @@ const ContentImpl: React.ForwardRefRenderFunction<
       scrollToCallbackRef.current = undefined;
 
       if (callback) callback();
-      /* setTimeout(() => {
-        // reset load cache
-        infiniteLoaderRef.current?.resetloadMoreItemsCache(true);
-
-        // execute callback
-        if (callback) callback();
-
-        isProgrammaticScrollRef.current = false;
-      }, 0);*/
+     
     }
   }, [scrollToTrigger]);
 

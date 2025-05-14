@@ -479,7 +479,8 @@ const ContentImpl: React.ForwardRefRenderFunction<
   const [scrollToTrigger, setScrollToTrigger] = useState(0);
 
   const isAutoScrollRef = useRef(true);
-  const isProgrammaticScrollRef = useRef(false);
+  //const isProgrammaticScrollRef = useRef(false);
+  const isAutoScrollingEnabledRef = useRef(true);
 
   const [msgColWidth, setMsgColWidth] = useState(0);
 
@@ -503,7 +504,7 @@ const ContentImpl: React.ForwardRefRenderFunction<
       return {
         scrollTo,
         autoScroll: () => {
-          if (isAutoScrollRef.current) scrollTo("last");
+          if (isAutoScrollingEnabledRef.current) scrollTo("last");
         },
       };
     },
@@ -643,15 +644,17 @@ const ContentImpl: React.ForwardRefRenderFunction<
   // handle vertical scroll on content
   const handleContentScrollY = () => {
     const el = listOuterRef.current;
-    if (el && !isProgrammaticScrollRef.current) {
-      const tolerance = 20;
-      const { scrollTop, clientHeight, scrollHeight } = el;
-      if (Math.abs(scrollTop + clientHeight - scrollHeight) <= tolerance) {
-        isAutoScrollRef.current = true;
-      } else {
-        isAutoScrollRef.current = false;
-      }
-    }
+    if (!el) return;
+
+    const tolerance = 20;
+    const { scrollTop, clientHeight, scrollHeight } = el;
+
+    // Calculate if scroll position is near the bottom
+    const atBottom =
+      Math.abs(scrollTop + clientHeight - scrollHeight) <= tolerance;
+
+    //auto scroll enabled when at bottom
+    isAutoScrollingEnabledRef.current = atBottom;
   };
 
   // attach scroll event listeners
@@ -669,17 +672,18 @@ const ContentImpl: React.ForwardRefRenderFunction<
 
   useEffect(() => {
     if (scrollToRef.current) {
-      isProgrammaticScrollRef.current = true;
+      //isProgrammaticScrollRef.current = true;
 
       // perform scroll and reset
       const index = scrollToRef.current === "last" ? items.length : 1;
       listRef.current?.scrollToItem(index);
-      scrollToRef.current = null;
-
       const callback = scrollToCallbackRef.current;
+
+      scrollToRef.current = null;
       scrollToCallbackRef.current = undefined;
 
-      setTimeout(() => {
+      if (callback) callback();
+      /* setTimeout(() => {
         // reset load cache
         infiniteLoaderRef.current?.resetloadMoreItemsCache(true);
 
@@ -687,7 +691,7 @@ const ContentImpl: React.ForwardRefRenderFunction<
         if (callback) callback();
 
         isProgrammaticScrollRef.current = false;
-      }, 0);
+      }, 0);*/
     }
   }, [scrollToTrigger]);
 

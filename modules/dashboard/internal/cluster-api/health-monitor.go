@@ -69,6 +69,7 @@ func NewHealthMonitor(cfg *config.Config, cm k8shelpers.ConnectionManager) Healt
 type DesktopHealthMonitor struct {
 	cm          k8shelpers.ConnectionManager
 	workerCache sync.Map
+	workerCache sync.Map
 	contextMu   map[string]*sync.Mutex
 	mu          sync.Mutex
 }
@@ -78,6 +79,7 @@ func NewDesktopHealthMonitor(cm k8shelpers.ConnectionManager) *DesktopHealthMoni
 	return &DesktopHealthMonitor{
 		cm:          cm,
 		workerCache: sync.Map{},
+		workerCache: sync.Map{},
 		contextMu:   make(map[string]*sync.Mutex),
 	}
 }
@@ -86,10 +88,15 @@ func NewDesktopHealthMonitor(cm k8shelpers.ConnectionManager) *DesktopHealthMoni
 func (hm *DesktopHealthMonitor) Shutdown() {
 	var wg sync.WaitGroup
 	hm.workerCache.Range(func(key, value interface{}) bool {
+	hm.workerCache.Range(func(key, value interface{}) bool {
 		wg.Add(1)
+		go func(worker healthMonitorWorker) {
 		go func(worker healthMonitorWorker) {
 			defer wg.Done()
 			worker.Shutdown()
+		}(value.(healthMonitorWorker))
+		return true
+	})
 		}(value.(healthMonitorWorker))
 		return true
 	})
@@ -150,6 +157,11 @@ func (hm *DesktopHealthMonitor) getOrCreateWorker(ctx context.Context, kubeConte
 	if ok {
 		worker = value.(healthMonitorWorker)
 	} else {
+	var worker healthMonitorWorker
+	value, ok := hm.workerCache.Load(k)
+	if ok {
+		worker = value.(healthMonitorWorker)
+	} else {
 		// Get clientset
 		clientset, err := hm.cm.GetOrCreateClientset(kubeContext)
 		if err != nil {
@@ -168,6 +180,9 @@ func (hm *DesktopHealthMonitor) getOrCreateWorker(ctx context.Context, kubeConte
 				return nil, err
 			}
 		}
+
+		// Add to cache
+		hm.workerCache.Store(k, worker)
 
 		// Start background processes and wait for cache to sync
 		if err := worker.Start(ctx); err != nil {

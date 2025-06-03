@@ -13,9 +13,11 @@
 // limitations under the License.
 
 import { useEffect, useState } from 'react';
+
 import Form from '@kubetail/ui/elements/Form';
+
+import Modal from '@/components/elements/Modal';  
 import { useIsClusterAPIEnabled } from '@/lib/hooks';
-import Modal from '../elements/Modal';
 
 type EnvironmentControlWidgetProps = {
   className?: string;

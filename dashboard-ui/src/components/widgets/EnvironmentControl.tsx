@@ -16,7 +16,7 @@ import { useEffect, useState } from 'react';
 
 import Form from '@kubetail/ui/elements/Form';
 
-import Modal from '@/components/elements/Modal';  
+import Modal from '@/components/elements/Modal';
 import { useIsClusterAPIEnabled } from '@/lib/hooks';
 
 type EnvironmentControlWidgetProps = {

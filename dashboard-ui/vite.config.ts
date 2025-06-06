@@ -1,6 +1,8 @@
 /// <reference types="vitest/config" />
 import react from '@vitejs/plugin-react-swc';
 import Unfonts from 'unplugin-fonts/vite';
+import tailwindcss from 'tailwindcss';
+import path from 'path';
 import { defineConfig, loadEnv } from 'vite';
 import svgr from 'vite-plugin-svgr';
 import tsconfigPaths from 'vite-tsconfig-paths';
@@ -15,6 +17,7 @@ export default ({ mode }: { mode: string; }) => {
       tsconfigPaths(),
       svgr(),
       react(),
+      tailwindcss(),
       Unfonts({
         fontsource: {
          families: [
@@ -66,6 +69,11 @@ export default ({ mode }: { mode: string; }) => {
       environment: 'jsdom',
       globals: true,
       setupFiles: ['./vitest.setup.ts'],
+    },
+    resolve: {
+      alias: {
+        '@': path.resolve(__dirname, 'src'),
+      },
     },
   });
 };
